@@ -1,4 +1,4 @@
-const { username, token } = require('./PAT.js');
+import { token } from './PAT.js';
 
 // Function to fetch paginated data from GitHub API with authentication
 async function fetchGitHubData(url, token) {
@@ -47,9 +47,9 @@ async function fetchGitHubFollowersAndFollowing(username, token) {
         fetchGitHubData(`https://api.github.com/users/${username}/followers`, token),
         fetchGitHubData(`https://api.github.com/users/${username}/following`, token)
     ]);
-    
+
     console.log(`Fetched ${followers.length} followers and ${following.length} following for user ${username}`);
-    
+
     return { followers, following };
 }
 
@@ -69,7 +69,7 @@ async function compareFollowersAndFollowing(username, token) {
 
 // Function to display results in the HTML
 function displayResults(username, notFollowingBack, notFollowedBack) {
-    document.getElementById('username').textContent = username;
+    document.getElementById('display-username').textContent = username;
     document.getElementById('username-following').textContent = username;
     document.getElementById('username-followers').textContent = username;
 
@@ -77,6 +77,7 @@ function displayResults(username, notFollowingBack, notFollowedBack) {
     notFollowingBackList.innerHTML = '';
     notFollowingBack.forEach(user => {
         const li = document.createElement('li');
+        li.className = 'list-group-item';
         li.textContent = user;
         notFollowingBackList.appendChild(li);
     });
@@ -85,26 +86,39 @@ function displayResults(username, notFollowingBack, notFollowedBack) {
     notFollowedBackList.innerHTML = '';
     notFollowedBack.forEach(user => {
         const li = document.createElement('li');
+        li.className = 'list-group-item';
         li.textContent = user;
         notFollowedBackList.appendChild(li);
     });
+
+    // Show the results section
+    document.getElementById('resultSection').style.display = 'block';
+    document.getElementById('heading').style.display = 'block';
+    document.getElementById('intro').style.display = 'none';
 }
 
-// Example usage
-compareFollowersAndFollowing(username, token)
-    .then(({ notFollowingBack, notFollowedBack }) => {
-        console.log(`Users followed by ${username} but not following back:`);
-        notFollowingBack.forEach(user => {
-            console.log(user);
-        });
+// Event listener for the "Fetch Results" button
+document.getElementById('fetchResults').addEventListener('click', () => {
+    const username = document.getElementById('username').value;
+    if (username) {
+        compareFollowersAndFollowing(username, token)
+            .then(({ notFollowingBack, notFollowedBack }) => {
+                console.log(`Users followed by ${username} but not following back:`);
+                notFollowingBack.forEach(user => {
+                    console.log(user);
+                });
 
-        console.log(`Users following ${username} but not followed back:`);
-        notFollowedBack.forEach(user => {
-            console.log(user);
-        });
+                console.log(`Users following ${username} but not followed back:`);
+                notFollowedBack.forEach(user => {
+                    console.log(user);
+                });
 
-        displayResults(username, notFollowingBack, notFollowedBack);
-    })
-    .catch(error => {
-        console.error("An error occurred:", error);
-    });
+                displayResults(username, notFollowingBack, notFollowedBack);
+            })
+            .catch(error => {
+                console.error("An error occurred:", error);
+            });
+    } else {
+        alert("Please enter a GitHub username.");
+    }
+});
