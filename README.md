@@ -22,3 +22,9 @@ To use FollowFair, simply clone this repository and follow the setup instruction
    git clone https://github.com/charankulal/followfair.git
 
 ```
+
+## Try out here
+
+Click on the link to try the application
+
+<a href="https://charankulal.github.io/FairFollow/">FairFollow</a>
