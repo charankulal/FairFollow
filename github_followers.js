@@ -11,19 +11,29 @@ async function fetchGitHubData(url, token) {
     });
 
     while (true) {
-
         const response = await fetch(`${url}?per_page=${perPage}&page=${page}`, {
             headers,
         });
 
         if (!response.ok) {
+            const resetTime = response.headers.get("X-RateLimit-Reset");
+            const resetDate = new Date(resetTime * 1000);
+            const currentTime = new Date();
+
+            if (response.status === 403 && resetTime && currentTime < resetDate) {
+                const waitTime = resetDate.getTime() - currentTime.getTime();
+                console.warn(`Rate limit exceeded. Waiting until ${resetDate.toLocaleString()}...`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                continue; // Retry the request after the wait time
+            }
+
             console.error(
                 `Error fetching page ${page}: ${response.status} ${response.statusText}`
             );
             console.error("Rate limit info:", {
                 "X-RateLimit-Limit": response.headers.get("X-RateLimit-Limit"),
                 "X-RateLimit-Remaining": response.headers.get("X-RateLimit-Remaining"),
-                "X-RateLimit-Reset": response.headers.get("X-RateLimit-Reset"),
+                "X-RateLimit-Reset": resetDate.toLocaleString(),
             });
             return results; // Return what we have so far
         }
@@ -48,14 +58,11 @@ async function fetchGitHubFollowersAndFollowing(username, token) {
         fetchGitHubData(`https://api.github.com/users/${username}/following`, token)
     ]);
 
-
-
     return { followers, following };
 }
 
 // Function to compare followers and following lists
 async function compareFollowersAndFollowing(username, token) {
-
     const { followers, following } = await fetchGitHubFollowersAndFollowing(username, token);
 
     const followersSet = new Set(followers.map(follower => follower.login));
@@ -103,16 +110,6 @@ document.getElementById('fetchResults').addEventListener('click', () => {
     if (username) {
         compareFollowersAndFollowing(username, token)
             .then(({ notFollowingBack, notFollowedBack }) => {
-
-                notFollowingBack.forEach(user => {
-
-                });
-
-
-                notFollowedBack.forEach(user => {
-
-                });
-
                 displayResults(username, notFollowingBack, notFollowedBack);
             })
             .catch(error => {
