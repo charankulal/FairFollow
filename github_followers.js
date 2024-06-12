@@ -11,7 +11,7 @@ async function fetchGitHubData(url, token) {
     });
 
     while (true) {
-        console.log(`Fetching page ${page} of ${url}`);
+
         const response = await fetch(`${url}?per_page=${perPage}&page=${page}`, {
             headers,
         });
@@ -48,14 +48,14 @@ async function fetchGitHubFollowersAndFollowing(username, token) {
         fetchGitHubData(`https://api.github.com/users/${username}/following`, token)
     ]);
 
-    console.log(`Fetched ${followers.length} followers and ${following.length} following for user ${username}`);
+
 
     return { followers, following };
 }
 
 // Function to compare followers and following lists
 async function compareFollowersAndFollowing(username, token) {
-    console.log(`Comparing followers and following lists for user ${username}`);
+
     const { followers, following } = await fetchGitHubFollowersAndFollowing(username, token);
 
     const followersSet = new Set(followers.map(follower => follower.login));
@@ -103,14 +103,14 @@ document.getElementById('fetchResults').addEventListener('click', () => {
     if (username) {
         compareFollowersAndFollowing(username, token)
             .then(({ notFollowingBack, notFollowedBack }) => {
-                console.log(`Users followed by ${username} but not following back:`);
+
                 notFollowingBack.forEach(user => {
-                    console.log(user);
+
                 });
 
-                console.log(`Users following ${username} but not followed back:`);
+
                 notFollowedBack.forEach(user => {
-                    console.log(user);
+
                 });
 
                 displayResults(username, notFollowingBack, notFollowedBack);
